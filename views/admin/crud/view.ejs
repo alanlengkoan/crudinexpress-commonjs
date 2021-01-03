@@ -1,0 +1,70 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Halaman <%= halaman %></div>
+    </div>
+    <div class="card-body">
+        <a href="/admin/crud/add" class="btn btn-success btn-sm mb-2">Tambah</a>
+
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Judul</th>
+                    <th>Link</th>
+                    <th>Text</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% data.forEach(function (row) { %>
+                <tr>
+                    <td><%= row.judul %></td>
+                    <td><%= row.link %></td>
+                    <td><%= row.text %></td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="crud/upd/<%= row.id_data %>">Ubah</a>
+                        <button type="button" id="del" class="btn btn-danger btn-sm" data-id="<%= row.id_data %>">Hapus</button>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).on('click', '#del', function (e) {
+        var ini = $(this);
+
+        swal({
+            title: "Apakah Anda yakin ingin menghapusnya?",
+            text: "Data yang telah dihapus tidak dapat dikembalikan!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((del) => {
+            if (del) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/crud/del',
+                    data: {
+                        id: ini.data('id'),
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        swal({
+                            title: response.title,
+                            text: response.text,
+                            icon: response.icon,
+                            button: response.button,
+                        }).then(function () {
+                            location.reload();
+                        });
+                    }
+                });
+            } else {
+                return false;
+            }
+        });
+    });
+</script>

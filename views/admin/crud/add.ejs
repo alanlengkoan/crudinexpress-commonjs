@@ -1,0 +1,44 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Halaman <%= halaman %></div>
+    </div>
+    <div class="card-body">
+        <form action="/admin/crud/add_process" method="post" id="form-add">
+            <div class="form-group">
+                <label for="judul">Judul</label>
+                <input type="text" class="form-control" id="judul" name="judul" placeholder="Masukkan Judul" />
+            </div>
+            <div class="form-group">
+                <label for="link">Link</label>
+                <input type="text" class="form-control" id="link" name="link" placeholder="Masukkan Link" />
+            </div>
+            <div class="form-group">
+                <label for="text">Text</label>
+                <input type="text" class="form-control" id="text" name="text" placeholder="Masukkan Text" />
+            </div>
+            <button type="submit" class="btn btn-success btn-sm">Simpan</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $('#form-add').submit(function () {
+        $.ajax({
+            type: $(this).attr('method'),
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function (response) {
+                swal({
+                    title: response.title,
+                    text: response.text,
+                    icon: response.icon,
+                    button: response.button,
+                }).then(function () {
+                    window.location.href = '/admin/crud';
+                });
+            }
+        })
+        return false;
+    });
+</script>
