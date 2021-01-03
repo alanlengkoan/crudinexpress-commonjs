@@ -1,7 +1,9 @@
 // package
 const express = require('express');
+const session = require('express-session')
 const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser')
+const bcryptjs = require('bcryptjs');
 const app = express();
 // file
 var mysqli = require('./configs/connect.js');
@@ -31,6 +33,13 @@ app.set('layout', 'home/base', 'admin/base');
 app.set('layout extractScripts', true);
 app.set('view engine', 'ejs');
 
+// set session
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+}));
+
 app.get('/', (request, response) => {
     var data = {
         layout: 'home/base',
@@ -58,55 +67,136 @@ app.get('/tentang', (request, response) => {
     response.render('home/tentang', data);
 });
 
-app.get('/admin', (request, response) => {
+app.get('/masuk', (request, response) => {
     var data = {
-        layout: 'admin/base',
-        halaman: 'Dashboard',
-        title: 'Dashboard',
+        layout: 'home/base',
+        halaman: 'Masuk',
+        title: 'Masuk',
     };
-    response.render('admin/dashboard/index', data);
+    response.render('home/masuk', data);
+});
+
+app.get('/keluar', (request, response) => {
+    request.session.destroy(function (err) {
+        response.redirect('/');
+    })
+});
+
+// untuk authentication
+app.post('/auth', urlencodedParser, (request, response) => {
+    var username = request.body.username;
+    var password = request.body.password;
+
+    mysqli.query('SELECT * FROM tb_users WHERE username = ?', [username], async (error, results, fields) => {
+        if (results.length > 0) {
+            // untuk mengecek password
+            let hashPassword = await bcryptjs.compare(password, results[0].password);
+            // apabila password benar
+            if (hashPassword === true) {
+                if (results[0].level === 'admin') {
+                    request.session.id_users = results[0].id_users;
+                    request.session.username = results[0].username;
+                    request.session.level = results[0].level;
+                    request.session.login = true;
+                    response.redirect('/admin');
+                } else {
+                    console.log('Akun Anda tidak terdaftar!');
+                }
+            } else {
+                console.log('Username atau Password Anda salah!');
+            }
+        } else {
+            console.log('Username atau Password Anda salah!');
+        }
+    });
+});
+
+app.get('/admin', (request, response) => {
+    if (request.session.login === true && request.session.level === "admin") {
+        var data = {
+            layout: 'admin/base',
+            halaman: 'Dashboard',
+            title: 'Dashboard',
+        };
+        response.render('admin/dashboard/index', data);
+    } else {
+        response.redirect('/');
+    }
 });
 
 app.get('/admin/master', (request, response) => {
-    var data = {
-        layout: 'admin/base',
-        halaman: 'Master',
-        title: 'Master',
-    };
-    response.render('admin/master/view', data);
+    if (request.session.login === true && request.session.level === "admin") {
+        var data = {
+            layout: 'admin/base',
+            halaman: 'Master',
+            title: 'Master',
+        };
+        response.render('admin/master/view', data);
+    } else {
+        response.redirect('/');
+    }
 });
 
 app.get('/admin/pustaka', (request, response) => {
-    var data = {
-        layout: 'admin/base',
-        halaman: 'Pustaka',
-        title: 'Pustaka',
-    };
-    response.render('admin/pustaka/view', data);
+    if (request.session.login === true && request.session.level === "admin") {
+        var data = {
+            layout: 'admin/base',
+            halaman: 'Pustaka',
+            title: 'Pustaka',
+        };
+        response.render('admin/pustaka/view', data);
+    } else {
+        response.redirect('/');
+    }
 });
 
 app.get('/admin/crud', (request, response) => {
-    mysqli.query("SELECT * FROM tb_data", function (error, results, fields) {
-        var data = {
-            layout: 'admin/base',
-            halaman: 'CRUD',
-            title: 'CRUD',
-            data: results
-        };
-
-        console.log(results);
-        response.render('admin/crud/view', data);
-    });
+    if (request.session.login === true && request.session.level === "admin") {
+        mysqli.query("SELECT * FROM tb_data", function (error, results, fields) {
+            var data = {
+                layout: 'admin/base',
+                halaman: 'CRUD',
+                title: 'CRUD',
+                data: results
+            };
+            response.render('admin/crud/view', data);
+        });
+    } else {
+        response.redirect('/');
+    }
 });
 
 // untuk tampil form tambah data
 app.get('/admin/crud/add', (request, response) => {
-    var data = {
-        layout: 'admin/base',
-        halaman: 'Tambah Data',
-        title: 'Tambah Data',
-    };
-    response.render('admin/crud/add', data);
+    if (request.session.login === true && request.session.level === "admin") {
+        var data = {
+            layout: 'admin/base',
+            halaman: 'Tambah Data',
+            title: 'Tambah Data',
+        };
+        response.render('admin/crud/add', data);
+    } else {
+        response.redirect('/');
+    }
+});
+
+// untuk tampil form ubah data
+app.get('/admin/crud/upd/:id', (request, response) => {
+    if (request.session.login === true && request.session.level === "admin") {
+        var id = request.params.id;
+
+        mysqli.query("SELECT * FROM tb_data WHERE id_data = '" + id + "'", function (error, results, fields) {
+            var data = {
+                layout: 'admin/base',
+                halaman: 'Ubah Data',
+                title: 'Ubah Data',
+                data: results
+            };
+            response.render('admin/crud/upd', data);
+        });
+    } else {
+        response.redirect('/');
+    }
 });
 
 // untuk proses tambah
@@ -144,7 +234,7 @@ app.post('/admin/crud/add_process', urlencodedParser, (request, response) => {
 // untuk proses ubah
 app.post('/admin/crud/upd_process', urlencodedParser, (request, response) => {
     mysqli.query('UPDATE tb_data SET judul = ?, link = ?, text = ?, upd = ? WHERE id_data = ?', [request.body.judul, request.body.link, request.body.text, myFunction.dateTime(), request.body.id_data], function (error, results, fields) {
-       if (error) {
+        if (error) {
             var json = {
                 title: 'Gagal!',
                 text: error['sqlMessage'],
@@ -164,23 +254,8 @@ app.post('/admin/crud/upd_process', urlencodedParser, (request, response) => {
     });
 });
 
-// untuk tampil form ubah data
-app.get('/admin/crud/upd/:id', (request, response) => {
-    var id = request.params.id;
-
-    mysqli.query("SELECT * FROM tb_data WHERE id_data = '" + id + "'", function (error, results, fields) {
-        var data = {
-            layout: 'admin/base',
-            halaman: 'Ubah Data',
-            title: 'Ubah Data',
-            data: results
-        };
-        response.render('admin/crud/upd', data);
-    });
-});
-
-// untuk hapus data
-app.post('/admin/crud/del', urlencodedParser, (request, response) => {
+// untuk proses hapus
+app.post('/admin/crud/del_process', urlencodedParser, (request, response) => {
     var id = request.body.id;
 
     mysqli.query('DELETE FROM tb_data WHERE id_data = "' + id + '"', function (error, results, fields) {
