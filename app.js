@@ -209,7 +209,9 @@ app.post('/admin/crud/add_process', urlencodedParser, (request, response) => {
         link: request.body.link,
         text: request.body.text,
         ins: myFunction.dateTime(),
+        ins_l: request.session.id_users,
         upd: myFunction.dateTime(),
+        upd_l: request.session.id_users,
     }, function (error, results, fields) {
         if (error) {
             var json = {
