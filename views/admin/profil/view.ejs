@@ -1,0 +1,141 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Halaman <%= halaman %></div>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="foto-tab" data-toggle="tab" href="#foto" role="tab" aria-controls="foto"
+                    aria-selected="true">Foto</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="akun-tab" data-toggle="tab" href="#akun" role="tab" aria-controls="akun"
+                    aria-selected="false">Akun</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="keamanan-tab" data-toggle="tab" href="#keamanan" role="tab"
+                    aria-controls="keamanan" aria-selected="false">Keamanan</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <!-- begin:: ubah foto -->
+            <div class="tab-pane fade show active" id="foto" role="tabpanel" aria-labelledby="foto-tab">
+                
+            </div>
+            <!-- end:: ubah foto -->
+            <!-- begin:: ubah akun -->
+            <div class="tab-pane fade" id="akun" role="tabpanel" aria-labelledby="akun-tab">
+                <form action="/admin/profil/upd_akun" method="post" id="form-akun">
+                    <div class="form-group">
+                        <label for="nama">Nama</label>
+                        <input type="text" class="form-control" id="nama" name="nama" value="<%= data[0].nama %>" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="<%= data[0].email %>" />
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="<%= data[0].username %>" />
+                    </div>
+                    <button type="submit" id="add-akun" class="btn btn-success btn-sm">Simpan</button>
+                </form>
+            </div>
+            <!-- end:: ubah akun -->
+            <!-- begin:: ubah keamanan -->
+            <div class="tab-pane fade" id="keamanan" role="tabpanel" aria-labelledby="keamanan-tab">
+                <form action="/admin/profil/upd_keamanan" method="post" id="form-keamanan">
+                    <div class="form-group">
+                        <label for="passwordlama">Password Lama</label>
+                        <input type="text" class="form-control" id="passwordlama" name="passwordlama" placeholder="Masukkan Password Lama" />
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordbaru">Password Baru</label>
+                        <input type="text" class="form-control" id="passwordbaru" name="passwordbaru" placeholder="Masukkan Password Baru" />
+                    </div>
+                    <div class="form-group">
+                        <label for="konfirmasipassword">Ulangi Password Baru</label>
+                        <input type="text" class="form-control" id="konfirmasipassword" name="konfirmasipassword" placeholder="Konfirmasi Password Baru" />
+                    </div>
+                    <button type="submit" id="add-keamanan" class="btn btn-success btn-sm">Simpan</button>
+                </form>
+            </div>
+            <!-- end:: ubah keamanan -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // untuk ubah data
+    var untukUbahAkun = function () {
+        $('#form-akun').submit(function (e) {
+            e.preventDefault();
+
+            $('#nama').attr('required', 'required');
+            $('#email').attr('required', 'required');
+            $('#username').attr('required', 'required');
+
+            if ($('#form-akun').parsley().isValid() == true) {
+                $.ajax({
+                    method: $(this).attr('method'),
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    beforeSend: function () {
+                        $('#add-akun').attr('disabled', 'disabled');
+                        $('#add-akun').html('Waiting');
+                    },
+                    success: function (response) {
+                        swal({
+                            title: response.title,
+                            text: response.text,
+                            icon: response.icon,
+                            button: response.button,
+                        }).then(function () {
+                            location.reload()
+                        });
+                    }
+                })
+            }
+        });
+    }();
+
+    // untuk ubah keamanan
+    var untukUbahKeamanan = function () {
+        $('#form-keamanan').submit(function (e) {
+            e.preventDefault();
+
+            $('#passwordlama').attr('required', 'required');
+            $('#passwordbaru').attr('required', 'required');
+            $('#konfirmasipassword').attr('required', 'required');
+
+            if ($('#form-keamanan').parsley().isValid() == true) {
+                $.ajax({
+                    method: $(this).attr('method'),
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    beforeSend: function () {
+                        $('#add-keamanan').attr('disabled', 'disabled');
+                        $('#add-keamanan').html('Waiting');
+                    },
+                    success: function (response) {
+                        $('#add-keamanan').removeAttr('disabled');
+                        $('#add-keamanan').html('Simpan');
+
+                        swal({
+                            title: response.title,
+                            text: response.text,
+                            icon: response.icon,
+                            button: response.button,
+                        }).then(function () {
+                            if (response.icon === 'success') {
+                                location.reload();
+                            }
+                        });
+                    }
+                })
+            }
+        });
+    }();
+</script>

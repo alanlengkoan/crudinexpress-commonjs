@@ -124,6 +124,106 @@ app.get('/admin', (request, response) => {
     }
 });
 
+app.get('/admin/profil', (request, response) => {
+    if (request.session.login === true && request.session.level === "admin") {
+        var id_users = request.session.id_users;
+
+        mysqli.query("SELECT * FROM tb_users WHERE id_users = '" + id_users + "'", function (error, results, fields) {
+            var data = {
+                layout: 'admin/base',
+                halaman: 'Profil',
+                title: 'Profil',
+                data: results
+            };
+            response.render('admin/profil/view', data);
+        });
+    } else {
+        response.redirect('/');
+    }
+});
+
+// proses ubah foto
+app.post('/admin/profil/upd_foto', (request, response) => {
+
+});
+
+// proses ubah akun
+app.post('/admin/profil/upd_akun', urlencodedParser, (request, response) => {
+    var id_users = request.session.id_users;
+
+    mysqli.query('UPDATE tb_users SET nama = ?, email = ?, username = ? WHERE id_users = ?', [request.body.nama, request.body.email, request.body.username, id_users], function (error, results, fields) {
+        if (error) {
+            var json = {
+                title: 'Gagal!',
+                text: error['sqlMessage'],
+                icon: 'error',
+                button: 'Ok!'
+            };
+        } else {
+            var json = {
+                title: 'Berhasil!',
+                text: 'Data diubah!',
+                icon: 'success',
+                button: 'Ok!'
+            };
+        }
+        // untuk respon json
+        response.json(json);
+    });
+});
+
+// proses ubah keamanan
+app.post('/admin/profil/upd_keamanan', urlencodedParser, (request, response) => {
+    var id_users = request.session.id_users;
+    var passLama = request.body.passwordlama;
+    var passBaru = request.body.passwordbaru;
+    var confirmPass = request.body.konfirmasipassword;
+
+    mysqli.query("SELECT * FROM tb_users WHERE id_users = '" + id_users + "'", async (error, results, fields) => {
+        // untuk mengecek password
+        let verifyPassword = await bcryptjs.compare(passLama, results[0].password);
+        // untuk mengecek password sesuai
+        if (verifyPassword === true) {
+            if (passBaru === confirmPass) {
+                // untuk hash password
+                let hashPassword = await bcryptjs.hash(passBaru, 8);
+                // untuk update password
+                mysqli.query('UPDATE tb_users SET password = ? WHERE id_users = ?', [hashPassword, id_users], (error, results, fields) => {
+                    if (error) {
+                        response.status(400).json({
+                            title: 'Gagal!',
+                            text: error['sqlMessage'],
+                            icon: 'error',
+                            button: 'Ok!'
+                        });
+                    } else {
+                        response.status(200).json({
+                            title: 'Berhasil!',
+                            text: 'Data diubah!',
+                            icon: 'success',
+                            button: 'Ok!'
+                        })
+                    }
+                });
+            } else {
+                response.status(200).json({
+                    title: 'Peringatan!',
+                    text: 'Password baru dan konfirmasi password baru tidak sama!',
+                    icon: 'warning',
+                    button: 'Ok!'
+                })
+            }
+        } else {
+            response.status(200).json({
+                title: 'Peringatan!',
+                text: 'Password lama yang Anda masukkan tidak sama!',
+                icon: 'warning',
+                button: 'Ok!'
+            })
+        }
+    });
+});
+
 app.get('/admin/master', (request, response) => {
     if (request.session.login === true && request.session.level === "admin") {
         var data = {
