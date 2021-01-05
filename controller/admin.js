@@ -1,5 +1,5 @@
 const bcryptjs = require('bcryptjs');
-var mysqli = require('./../configs/connect.js');
+var mysqli = require('./../configs/database.js');
 var myFunction = require('./../helpers/my_function.js');
 
 module.exports = {
