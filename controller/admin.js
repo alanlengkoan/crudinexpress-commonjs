@@ -48,13 +48,12 @@ module.exports = {
             // ubah foto
             mysqli.query('UPDATE tb_users SET foto = ? WHERE id_users = ?', [namaFoto, id_users], (error, results, fields) => {
                 if (error) {
-                    // untuk respon json
-                    response.status(400).json({
+                    var json = {
                         title: 'Gagal!',
                         text: error['sqlMessage'],
                         icon: 'error',
                         button: 'Ok!'
-                    });
+                    };
                 } else {
                     // menghapus foto lama
                     if (namaFotoLama !== '' || namaFotoLama !== null) {
@@ -69,14 +68,15 @@ module.exports = {
                         }
                     }
 
-                    // untuk respon json
-                    response.status(400).json({
+                    var json = {
                         title: 'Berhasil!',
                         text: 'Data diubah!',
                         icon: 'success',
                         button: 'Ok!'
-                    });
+                    };
                 }
+                // untuk respon json
+                response.json(json);
             });
         });
     },

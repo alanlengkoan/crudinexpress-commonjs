@@ -18,11 +18,6 @@ mysqli.connect((error) => {
     }
 });
 
-// hendle post
-var urlencodedParser = bodyParser.urlencoded({
-    extended: false
-})
-
 // public & assets static file
 var publicDirectory = 'public';
 app.use(express.static(publicDirectory));
