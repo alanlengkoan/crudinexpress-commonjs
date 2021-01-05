@@ -1,4 +1,6 @@
 const bcryptjs = require('bcryptjs');
+const path = require('path');
+var fs = require('fs');
 var mysqli = require('./../configs/database.js');
 var myFunction = require('./../helpers/my_function.js');
 
@@ -34,7 +36,52 @@ module.exports = {
         }
     },
 
-    upd_process: (request, response) => {
+    upd_foto: (request, response) => {
+        var id_users = request.session.id_users;
+        var namaFoto = request.file.originalname;
+
+        mysqli.query("SELECT * FROM tb_users WHERE id_users = '" + id_users + "'", async (error, results, fields) => {
+            // nama foto didatabase
+            var namaFotoLama = results[0].foto;
+            var lokasiFotoLama = './public/uploads/' + namaFotoLama;
+
+            // ubah foto
+            mysqli.query('UPDATE tb_users SET foto = ? WHERE id_users = ?', [namaFoto, id_users], (error, results, fields) => {
+                if (error) {
+                    // untuk respon json
+                    response.status(400).json({
+                        title: 'Gagal!',
+                        text: error['sqlMessage'],
+                        icon: 'error',
+                        button: 'Ok!'
+                    });
+                } else {
+                    // menghapus foto lama
+                    if (namaFotoLama !== '' || namaFotoLama !== null) {
+                        if (fs.existsSync(lokasiFotoLama)) {
+                            fs.unlink(lokasiFotoLama, (err, data) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log('berhasil');
+                                }
+                            });
+                        }
+                    }
+
+                    // untuk respon json
+                    response.status(400).json({
+                        title: 'Berhasil!',
+                        text: 'Data diubah!',
+                        icon: 'success',
+                        button: 'Ok!'
+                    });
+                }
+            });
+        });
+    },
+
+    upd_akun: (request, response) => {
         var id_users = request.session.id_users;
 
         mysqli.query('UPDATE tb_users SET nama = ?, email = ?, username = ? WHERE id_users = ?', [request.body.nama, request.body.email, request.body.username, id_users], function (error, results, fields) {

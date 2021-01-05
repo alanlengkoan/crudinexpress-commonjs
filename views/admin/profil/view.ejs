@@ -20,7 +20,17 @@
         <div class="tab-content" id="myTabContent">
             <!-- begin:: ubah foto -->
             <div class="tab-pane fade show active" id="foto" role="tabpanel" aria-labelledby="foto-tab">
-                
+                <form action="/admin/profil/upd_foto" method="post" id="form-foto">
+                    <div class="text-center">
+                        <img src="<%= data[0].foto === null ? '//placehold.it/150' : '/uploads/' + data[0].foto %>" class="mx-auto img-fluid d-block" id="lihat-gambar" alt="Profil" width="200" />
+                        <h6 class="mt-1">Upload a different photo</h6>
+                        <label class="custom-file">
+                            <input type="file" id="upload_foto" name="upload_foto" class="custom-file-input">
+                            <span class="custom-file-control">Choose file</span>
+                        </label>
+                    </div>
+                    <button type="submit" id="add-foto" class="btn btn-success btn-sm">Simpan</button>
+                </form>
             </div>
             <!-- end:: ubah foto -->
             <!-- begin:: ubah akun -->
@@ -66,6 +76,47 @@
 </div>
 
 <script>
+    // untuk upload foto
+    var untukUploadFoto = function () {
+        $("#upload_foto").change(function () {
+            cekLokasiFoto(this);
+        });
+    }();
+
+    // untuk ubah foto
+    var untukUbahFoto = function() {
+        $('#form-foto').submit(function(e) {
+            e.preventDefault();
+
+            $('#upload_foto').attr('required', 'required');
+
+            if ($('#form-foto').parsley().isValid() == true) {
+                $.ajax({
+                    method: $(this).attr('method'),
+                    url: $(this).attr('action'),
+                    data: new FormData(this),
+                    contentType: false,
+                    processData: false,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $('#add-foto').attr('disabled', 'disabled');
+                        $('#add-foto').html('Waiting');
+                    },
+                    success: function(response) {
+                        swal({
+                            title: response.title,
+                            text: response.text,
+                            icon: response.icon,
+                            button: response.button,
+                        }).then(function () {
+                            location.reload()
+                        });
+                    }
+                })
+            }
+        });
+    }();
+
     // untuk ubah data
     var untukUbahAkun = function () {
         $('#form-akun').submit(function (e) {
@@ -138,4 +189,17 @@
             }
         });
     }();
+
+    // untuk baca lokasi gambar
+    function cekLokasiFoto(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#lihat-gambar').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 </script>

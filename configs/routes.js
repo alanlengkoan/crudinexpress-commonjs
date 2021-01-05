@@ -1,7 +1,21 @@
+const bodyParser = require('body-parser');
+const multer = require('multer');
 var auth = require('../controller/auth');
 var home = require('./../controller/home');
 var admin = require('./../controller/admin');
-const bodyParser = require('body-parser');
+const {
+    response
+} = require('express');
+
+// hendle upload image
+var diskStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
 
 // hendle post
 var urlencodedParser = bodyParser.urlencoded({
@@ -43,13 +57,13 @@ module.exports = function (app) {
     });
 
     // proses ubah foto
-    app.post('/admin/profil/upd_foto', (request, response) => {
-
+    app.post('/admin/profil/upd_foto', multer({ storage: diskStorage }).single('upload_foto'), (request, response) => {
+        admin.upd_foto(request, response);
     });
 
     // proses ubah akun
     app.post('/admin/profil/upd_akun', urlencodedParser, (request, response) => {
-        admin.upd_process(request, response);
+        admin.upd_akun(request, response);
     });
 
     // proses ubah keamanan
@@ -86,7 +100,7 @@ module.exports = function (app) {
 
     // untuk proses ubah
     app.post('/admin/crud/upd_process', urlencodedParser, (request, response) => {
-       admin.upd_process(request, response);
+        admin.upd_process(request, response);
     });
 
     // untuk proses hapus

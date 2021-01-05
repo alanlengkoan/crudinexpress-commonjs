@@ -24,7 +24,7 @@ var urlencodedParser = bodyParser.urlencoded({
 })
 
 // public & assets static file
-var publicDirectory = 'public/assets';
+var publicDirectory = 'public';
 app.use(express.static(publicDirectory));
 
 // template engine
