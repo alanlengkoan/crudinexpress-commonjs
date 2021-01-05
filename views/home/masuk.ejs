@@ -3,6 +3,9 @@
         <div class="card-title">Halaman <%= halaman %></div>
     </div>
     <div class="card-body">
+        <!-- begin:: alert -->
+        <div id="msg"></div>
+        <!-- end:: alert -->
         <form action="/auth" method="post" id="form-add">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -10,9 +13,36 @@
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Masukkan Password" />
+                <input type="password" class="form-control" id="password" name="password"
+                    placeholder="Masukkan Password" />
             </div>
             <button type="submit" class="btn btn-success btn-sm">Masuk</button>
         </form>
     </div>
 </div>
+
+<script>
+    $('#form-add').submit(function () {
+        $.ajax({
+            type: $(this).attr('method'),
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function (response) {
+                if (response.status === true) {
+                    location.href = '/admin'                    
+                } else {
+                    $('#msg').html(`
+                        <div class="alert alert-${response.class} alert-dismissible fade show" role="alert">
+                            ${response.msg}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    `);
+                }
+            }
+        })
+        return false;
+    });
+</script>
