@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const app = express();
 
 // file
-var mysqli = require('./configs/connect.js');
+var mysqli = require('./configs/database.js');
 var routes = require('./configs/routes');
 
 // untuk cek koneksi database
