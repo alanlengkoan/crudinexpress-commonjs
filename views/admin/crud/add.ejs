@@ -16,7 +16,7 @@
                 <label for="text">Text</label>
                 <input type="text" class="form-control" id="text" name="text" placeholder="Masukkan Text" />
             </div>
-            <button type="submit" class="btn btn-success btn-sm">Simpan</button>
+            <button type="submit" id="btn-simpan" class="btn btn-success btn-sm">Simpan</button>
         </form>
     </div>
 </div>
@@ -28,6 +28,10 @@
             url: $(this).attr('action'),
             data: $(this).serialize(),
             dataType: 'json',
+            beforeSend: function () {
+                $('#btn-simpan').attr('disabled', 'disabled');
+                $('#btn-simpan').html('Menunggu');
+            },
             success: function (response) {
                 swal({
                     title: response.title,

@@ -51,6 +51,10 @@
                         id: ini.data('id'),
                     },
                     dataType: 'json',
+                    beforeSend: function () {
+                        ini.attr('disabled', 'disabled');
+                        ini.html('Menunggu');
+                    },
                     success: function (response) {
                         swal({
                             title: response.title,
